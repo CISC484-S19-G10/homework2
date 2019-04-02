@@ -74,8 +74,8 @@ def build_perceptron_classifier(class_dirs, class_values):
 
     #do a 70:30 split
     SPLIT_PROPS = {'train' : .7, 'valid': .3}
-    split_data = split_data(data, SPLIT_PROPS)
-    training_split, validation_split = split_data['train'], split_data['valid']
+    splits = split_data(data, SPLIT_PROPS)
+    training_split, validation_split = splits['train'], splits['valid']
     
     def get_n_iters_accuracy(n_iters):
         perceptron = train_perceptron(training_split, n_iters=n_iters)

@@ -79,7 +79,7 @@ def split_data(data, split_props):
     splits = {}
     offset = 0
     for key, prop in split_props.items():
-        split_count = math.round(props * len(data))
+        split_count = round(prop * len(data))
         splits[key] = data[offset:offset + split_count]
         offset += split_count
     
