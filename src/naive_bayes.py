@@ -6,12 +6,14 @@ from main import *
 
 CLASS_VALS = ["spam", "ham"]
 
+#Returns an array of texts, which is each an array of words
 def load_files(read_dir):
     texts = []
     for filename in os.listdir(read_dir):
         texts.append(read_file(os.path.join(read_dir,filename),True))
     return texts
 
+#Calculates the log probabilities of each word in the corpus
 def corpus_log_prob(corpus_dir, bias=1):
     corpus = read(corpus_dir, True)
     size = len(corpus)
@@ -28,10 +30,8 @@ def corpus_log_prob(corpus_dir, bias=1):
 
     return corpus_dict
 
+#Add up the log probs to classify the text
 def classify(corpus_dict, text, document_prob):
-    #print("Classified")
-    #print(text)
-    #total = sum(map(lambda word: corpus_dict[word], text))
     total = 0
     for word in text:
         if word in corpus_dict:
