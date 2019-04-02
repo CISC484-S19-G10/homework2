@@ -26,7 +26,7 @@ def perceptron_function(instance, weights):
     #sum up each attribute's weighted contribution
     for attr, val in instance.items():
         if CLASS_VALUE != attr:
-            total += val * weights[attr]
+            total += val * weights.get(attr, 0)
     
     if total > 0:
         return 1
@@ -61,7 +61,7 @@ def train_perceptron(training_data, learning_rate=1/64, initial_weight=lambda x:
 def get_accuracy(perceptron, testing_data):
     total_correct = 0
     for inst in testing_data:
-        if perceptron(inst) == testing_data[CLASS_VALUE]:
+        if perceptron(inst) == inst[CLASS_VALUE]:
             total_correct += 1
 
     return total_correct / len(testing_data)
@@ -90,3 +90,13 @@ def build_perceptron_classifier(class_dirs, class_values):
     n_iters = max(range(3,6), key=get_n_iters_accuracy)
 
     return train_perceptron(data, n_iters=n_iters)
+
+def get_accuracy_on_dirs(perceptron, class_dirs, class_values):
+    #combine the data from each directory of example instances of a class
+    data = []
+    for class_name, dir_name in class_dirs.items():
+        data.extend(extract_instances(dir_name, class_values[class_name]))
+
+    return get_accuracy(perceptron, data, to_print=True)
+
+

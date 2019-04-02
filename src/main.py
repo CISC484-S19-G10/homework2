@@ -97,13 +97,16 @@ def main():
         "ham": 0
     }
     train_dir = os.path.join(args.dir, "train")
-    class_dirs = {c: os.path.join(train_dir, c) for c in CLASS_VALS}
     test_dir = os.path.join(args.dir, "test")
+    
+    train_class_dirs = {c: os.path.join(train_dir, c) for c in CLASS_VALS}
+    test_class_dirs = {c: os.path.join(test_dir, c) for c in CLASS_VALS}
 
     train_probs = {c: corpus_log_prob(os.path.join(train_dir, c)) for c in CLASS_VALS}
     test_probs = {c: corpus_log_prob(os.path.join(test_dir, c)) for c in CLASS_VALS}
 
-    percept = perceptron.build_perceptron_classifier(class_dirs, CLASS_VALS)
+    percept = perceptron.build_perceptron_classifier(train_class_dirs, CLASS_VALS)
+    print(get_accuracy_on_dirs(perceptron, test_class_dirs, CLASS_VALS))
 
 if __name__=='__main__':
     main()
