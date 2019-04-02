@@ -5,7 +5,10 @@ import os
 import codecs
 import re
 import math
+import random
 from collections import Counter
+
+import perceptron
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -31,6 +34,7 @@ def read(read_dir, alpha_only, combine=list.extend):
         lines = f.read()
         if alpha_only:
             lines = re.findall(r"\w+", lines)
+            lines = [line.lower() for line in lines]
         else:
             lines = lines.split()
 
@@ -62,23 +66,44 @@ def corpus_log_prob(corpus_dir, bias=1):
 def get_naive_bayes_classifier(class_probs, document):
     pass
 
+#split_props contain floats representing the desired relative proportions for each split
+EPSILON = .001
+def split_data(data, split_props):
+    #the total proportion must be 1, (modulo floating point error)
+    assert(abs(sum(split_props.values()) - 1) < EPSILON)
+
+    #randomise the order of the data
+    random.shuffle(data)
+
+    #split up the data based on the specified proportions
+    splits = {}
+    offset = 0
+    for key, prop in split_props.items():
+        split_count = math.round(props * len(data))
+        splits[key] = data[offset:offset + split_count]
+        offset += split_count
+    
+    #we dshould have assigned all of our data to a split
+    assert(len(data) == offset)
+
+    return splits
+
 def main():
     args = parse_args()
     args.dir = os.path.abspath(args.dir)
 
-    CLASS_VALS = ["spam", "ham"]
+    CLASS_VALS = {
+        "spam": 1, 
+        "ham": 0
+    }
     train_dir = os.path.join(args.dir, "train")
+    class_dirs = {c: os.path.join(train_dir, c) for c in CLASS_VALS}
     test_dir = os.path.join(args.dir, "test")
 
     train_probs = {c: corpus_log_prob(os.path.join(train_dir, c)) for c in CLASS_VALS}
     test_probs = {c: corpus_log_prob(os.path.join(test_dir, c)) for c in CLASS_VALS}
 
-    
-
-    #print(spam)
-    #print(spam["a"])
-
-
+    percept = perceptron.build_perceptron_classifier(class_dirs, CLASS_VALS)
 
 if __name__=='__main__':
     main()
