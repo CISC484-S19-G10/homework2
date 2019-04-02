@@ -53,14 +53,40 @@ def train_perceptron(training_data, learning_rate=1/64, initial_weight=lambda x:
             for key in weights:
                 weights[key] += learning_rate * (inst[CLASS_VALUE] \
                                                  - perceptron_function(inst, weights))
+        print('done iter {} of {}'.format(i + 1, n_iters))
 
     #bind the weights to the generic perceptron function
     return lambda inst: perceptron_function(inst, weights)
+
+def get_accuracy(perceptron, testing_data):
+    total_correct = 0
+    for inst in testing_data:
+        if perceptron(inst) == testing_data[CLASS_VALUE]:
+            total_correct += 1
+
+    return total_correct / len(testing_data)
 
 def build_perceptron_classifier(class_dirs, class_values):
     #combine the data from each directory of example instances of a class
     data = []
     for class_name, dir_name in class_dirs.items():
         data.extend(extract_instances(dir_name, class_values[class_name]))
+
+    #do a 70:30 split
+    SPLIT_PROPS = {'train' : .7, 'valid': .3}
+    split_data = split_data(data, SPLIT_PROPS)
+    training_split, validation_split = split_data['train'], split_data['valid']
     
-    return train_perceptron(data)
+    def get_n_iters_accuracy(n_iters):
+        perceptron = train_perceptron(training_split, n_iters=n_iters)
+
+        accr = get_accuracy(perceptron, validation_split)
+
+        print('accuracy for {} iters: {}'.format(n_iters, accr))
+
+        return accr
+
+    #find the number of iterations which gives us the best accuracy
+    n_iters = max(range(3,6), key=get_n_iters_accuracy)
+
+    return train_perceptron(data, n_iters=n_iters)
