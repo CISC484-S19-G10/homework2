@@ -77,4 +77,4 @@ def naive_bayes_accuracy(train_dir, test_dir):
     train_probs = {c: corpus_log_prob(os.path.join(train_dir, c)) for c in CLASS_VALS}
     counts = {c: count_documents(os.path.join(train_dir, c)) for c in CLASS_VALS}
     accs = {c: accuracy(os.path.join(test_dir, c), train_probs, counts, c) for c in CLASS_VALS}
-    print(accs)
+    return accs

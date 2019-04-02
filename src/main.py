@@ -6,8 +6,6 @@ import math
 from collections import Counter
 from naive_bayes import *
 
-CLASS_VALS = ["spam", "ham"]
-
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -54,18 +52,9 @@ def read_file(path, alpha_only):
 
     return lines
 
-def load_files(read_dir):
-    texts = []
-    for filename in os.listdir(read_dir):
-        texts.append(read_file(os.path.join(read_dir,filename),True))
-    return texts
 
 
-def corpus_dict(corpus_dir):
-    corpus = read(corpus_dir, True)
-    size = len(corpus)
-    corpus_dict = Counter(corpus)
-    print(size)
+
 
 def main():
     args = parse_args()
@@ -73,7 +62,9 @@ def main():
 
     train_dir = os.path.join(args.dir, "train")
     test_dir = os.path.join(args.dir, "test")
-    naive_bayes_accuracy(train_dir, test_dir)
+
+    nb_acc = naive_bayes_accuracy(train_dir, test_dir)
+    print(nb_acc)
     
 
 
