@@ -37,31 +37,43 @@ def read(read_dir, alpha_only):
 
     return to_return
 
-def corpus_log_prob(corpus_dir):
+def corpus_dict(corpus_dir):
     corpus = read(corpus_dir, True)
     size = len(corpus)
     corpus_dict = Counter(corpus)
+
+    print(size)
     #print(size)
-    for key in corpus_dict:
-        prob = corpus_dict[key]/size
-        corpus_dict[key] = math.log(prob)
+    #for key in corpus_dict:
+    #    prob = corpus_dict[key]/size
+    #    corpus_dict[key] = math.log(prob)
         #print(prob)
 
     return corpus_dict
 
-    
+def classify(corpus_dict, text):
+    print("Classified")
+
+
     #return (len(corpus), Counter(corpus))
 
 def main():
     args = parse_args()
     args.dir = os.path.abspath(args.dir)
 
-    test_dir = os.path.join(args.dir, "test")
-    spam_dir = os.path.join(test_dir, "spam")
-    ham_dir = os.path.join(test_dir, "ham")
+    data_dir = os.path.join(args.dir, "test")
+    spam_train = os.path.join(data_dir, "spam")
+    ham_train = os.path.join(data_dir, "ham")
+
+    
+
+    #t_dir = os.path.join(args.dir, "train")
 
 
-    spam = corpus_log_prob(spam_dir)
+    spam_logs = corpus_dict(spam_dir)
+    #ham_logs = corpus_dict(ham_dir)
+
+    #print(ham_logs)
     #print(spam)
     #print(spam["a"])
 
