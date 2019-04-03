@@ -8,7 +8,7 @@ import math
 import random
 from collections import Counter
 
-import perceptron
+from perceptron import * #get_accuracy_on_dirs, build_perceptron_classifier
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -105,7 +105,7 @@ def main():
     train_probs = {c: corpus_log_prob(os.path.join(train_dir, c)) for c in CLASS_VALS}
     test_probs = {c: corpus_log_prob(os.path.join(test_dir, c)) for c in CLASS_VALS}
 
-    percept = perceptron.build_perceptron_classifier(train_class_dirs, CLASS_VALS)
+    perceptron = build_perceptron_classifier(train_class_dirs, CLASS_VALS)
     print(get_accuracy_on_dirs(perceptron, test_class_dirs, CLASS_VALS))
 
 if __name__=='__main__':

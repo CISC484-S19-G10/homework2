@@ -93,10 +93,9 @@ def build_perceptron_classifier(class_dirs, class_values):
 
 def get_accuracy_on_dirs(perceptron, class_dirs, class_values):
     #combine the data from each directory of example instances of a class
-    data = []
-    for class_name, dir_name in class_dirs.items():
-        data.extend(extract_instances(dir_name, class_values[class_name]))
+    class_data = {class_name: extract_instances(dir_name, class_values[class_name]) \
+                     for class_name, dir_name in class_dirs.items()}
 
-    return get_accuracy(perceptron, data, to_print=True)
+    return {c: get_accuracy(perceptron, class_data[c]) for c in class_values}
 
 
