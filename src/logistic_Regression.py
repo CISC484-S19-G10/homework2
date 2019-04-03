@@ -4,6 +4,7 @@ import codecs
 import re
 import math
 from collections import Counter
+import numpy as np
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -87,6 +88,12 @@ def corpus_counts(corpus_dir,trainValSplit):
     print(corpus_arr)
 
     return corpus_arr
+
+def logReg(learnRate,iterations,q=2):
+    return ":("
+
+#1+math.exp(w0+sum(wi*xi))
+
 
 def main():
     args = parse_args()
