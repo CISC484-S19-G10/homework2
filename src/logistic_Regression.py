@@ -90,65 +90,77 @@ def corpus_counts(corpus_dir,trainValSplit):
 
     return corpus_arr
 
-def classFunc(attrsAndWeights):
-    #1+math.exp(w0+sum(wi*xi))
-    rtrnVals = 1/(1+math.exp(sum(attrsAndWeights)))
-    return rtrnVals
 
 def logReg(xiwiDict,w0):    
     xiwiSum = sum(xiwiDict.values())
 
     return 1/(1+math.exp(-xiwiSum+w0))
 
+def classify(sample,weights,w0):
+    weightedSum = 0
+    for k in sample:
+        try:
+            weightedSum += sample[k]*weights[k]
+        except:
+            weightedSum += .1
+            
+    result = 1/(1+math.exp(-weightedSum+w0))
+    if result > 0 :
+        return 1
+    else:
+        return 0
 
-def learnWeights(xi,learnRate,iterations,startingWeight,lam,q=2,spam=1):    
+
+def learnWeights(training_data,learnRate,iterations,startingWeight,lam,q=2,spam=1):    
+    #adjusting to include the ham data as well
+    print("trainingData[0]: " +str(len(training_data[0])))
+    print("trainingData[1]: " +str(len(training_data[1])))
+    
+    #get all attributes from training data
+    attributes = set()
+    for inst in training_data:
+        attributes |= set(inst.keys())
+    
+    print("Attributes: " + str(len(attributes)))
+
     #create initial weight dictionary
-    wiDict = dict()
-    for attr in xi:
-        wiDict[attr] = startingWeight
-
-    # print("Initial Weights: (dictionary)", end = " ")
-    # print(wiDict)
-
-    classPredict = 0
+    weights = {attr: startingWeight for attr in attributes}
     
     for i in range(iterations):
         if i%500 == 0:
-            print("Pass #" + str(i) + " | " + str(classPredict))
+            print("Pass #" + str(i))
         
-        scoreDict = dict()
-        for k in xi:
-            scoreDict[k] = xi[k]*wiDict[k]
-        # print(scoreDict)
-
-        classPredict = logReg(scoreDict,.1)
-        # print(classPredict)
-
-        err = spam-classPredict
-        # print(err)
+        #expected class value True(1) or False(0)
+        classVal = True
         
-        gradDict = dict()
-        for k in xi:
-            gradDict[k] = xi[k]*err
+        weightedAttr = {attr: 0 for attr in attributes}
+        for inst in training_data:
+            for w in weights:
+                try:
+                    attrVal = inst[w]
+                except:
+                    attrVal = 0
+                weightedAttr[w] = attrVal*weights[w]
+            
+            classPredict = logReg(weightedAttr,.1)
+            err = classVal - classPredict
 
-        for k in wiDict:
-            wiDict[k] = wiDict[k]+(learnRate*gradDict[k])-((lam*8.5)*(wiDict[k]**2))
+            #flip the value from spam->ham->spam->ham
+            classVal = not classVal
 
-    # print(wiDict)
-    return wiDict
+            gradient = {attr:inst[attr]*err for attr in attributes}
+        
+            for k in weights:
+                weights[k] += (learnRate*gradient[k])-((lam*0.5)*(weights[k]**2))
+    return weights
 
-def classify(sample,weights):
-    xiwi = dict()
-    for k in weights:
-        try:
-            xiwi[k] = weights[k]*sample[k]
-        except:
-            xiwi[k] = 0
-  
-    return logReg(xiwi)
+def get_accuracy(perceptron, testing_data):
+    total_correct = 0
+    for inst in testing_data:
+        if perceptron(inst) == inst[CLASS_VALUE]:
+            total_correct += 1
 
-def validate():
-    return 0
+    return total_correct / len(testing_data)
 
 def main():
     args = parse_args()
@@ -162,13 +174,15 @@ def main():
     train_counts_ham,validate_counts_ham = corpus_counts(os.path.join(train_dir, "ham"),True)
     train_counts_spam,validate_counts_spam = corpus_counts(os.path.join(train_dir, "spam"),True)
 
+    trainHamSpam = [train_counts_spam,train_counts_ham]
+
     # learn the weights
-    weights = learnWeights(train_counts_spam,.000001,10000,0,.1)
+    weights = learnWeights(trainHamSpam,.00001,5,0,1)
     top = nlargest(20, weights, key=weights.get)
     for t in top:
         print(t + " | " + str(weights[t]))
     
-    # print(classify(validate_counts_spam,weights))
+    print(classify(validate_counts_spam,weights,.1))
     # print(classify(validate_counts_ham,weights))
     
     # print(train_counts_spam)
