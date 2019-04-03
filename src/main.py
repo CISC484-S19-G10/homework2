@@ -41,7 +41,7 @@ def corpus_log_prob(corpus_dir, bias=1):
     corpus = read(corpus_dir, True)
     size = len(corpus)
     corpus_dict = Counter(corpus)
-	adjusted_size = bias * len(corpus_dict) + size
+    adjusted_size = bias * len(corpus_dict) + size
     #print(size)
     for key in corpus_dict:
 		#bias needed so we can compare against tokens which don't appear in the corpus
@@ -50,7 +50,7 @@ def corpus_log_prob(corpus_dir, bias=1):
         #print(prob)
 	#I'm assuming no one's gonna use this word looking like this, so we should be fine
 	#(would be gaureenteed to work if we made everything lowercase in pre-processing...)
-	corpus_dict['__DEFAULT__'] = bias / adjusted_size
+    corpus_dict['__DEFAULT__'] = bias / adjusted_size
 
     return corpus_dict
 
@@ -63,8 +63,8 @@ def get_naive_bayes_classifier(class_probs, document):
 def main():
     args = parse_args()
     args.dir = os.path.abspath(args.dir)
-
-	CLASS_VALS = ["spam", "ham"]
+    
+    CLASS_VALS = ["spam", "ham"]
     train_dir = os.path.join(args.dir, "train")
     test_dir = os.path.join(args.dir, "test")
 
