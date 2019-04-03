@@ -139,6 +139,9 @@ def get_accuracy_on_dirs(perceptron, class_dirs, class_values):
     class_data = {class_name: extract_instances(dir_name, class_values[class_name]) \
                      for class_name, dir_name in class_dirs.items()}
 
-    return {c: get_accuracy(perceptron, class_data[c]) for c in class_values}
+    accr = {c: get_accuracy(perceptron, class_data[c]) for c in class_values}
+    accr['total'] = sum(accr.values()) / len(accr)
+
+    return accr
 
 
