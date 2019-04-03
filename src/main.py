@@ -83,8 +83,15 @@ def split_data(data, split_props):
         splits[key] = data[offset:offset + split_count]
         offset += split_count
     
-    #we dshould have assigned all of our data to a split
-    assert(len(data) == offset)
+    #if we've missed any instances, assign the remaining ones
+    #to the split with the highest rounding error
+    while len(data) > offset:
+        key = max(split_props.keys(), key=lambda key: split_props[key] - len(splits[key]))
+        splits[key].append(data[offset])
+        offset += 1
+
+    #we should have assigned all of our data to a split
+    assert(len(data) == sum([len(splits[key]) for key in splits]))
 
     return splits
 
