@@ -48,8 +48,9 @@ def count_documents(read_dir):
     countfiles = next(os.walk(read_dir))[2]
     return len(countfiles)
 
-#Get the accuracy of naive bayes on a test directory
+#Get the accuracy of naive bayes model on a test directory
 def accuracy(test_dir, train_probs, counts, class_value):
+    #Probabilities of each document type
     total_count = counts["ham"]+counts["spam"]
     doc_probs = {c: counts[c]/total_count for c in CLASS_VALS}
     doc_probs["spam"] = math.log(doc_probs["spam"])
@@ -58,10 +59,11 @@ def accuracy(test_dir, train_probs, counts, class_value):
     correct = 0
     total_read = 0
 
+    #For each document in the test_directory
     for item in load_files(test_dir):
         #Classify the doc with both classifiers
         classifications = {c: classify(train_probs[c], item, doc_probs[c]) for c in CLASS_VALS}
-        #Choose the max
+        #Choose the highest probability
         m = max(classifications, key=classifications.get)
 
         if m == class_value:
@@ -71,10 +73,24 @@ def accuracy(test_dir, train_probs, counts, class_value):
         total_read+=1
 
 
-    return correct/total_read
+    return correct/total_read, correct, total_read
 
+#Get the accuracy on a test sets using the training dir
 def naive_bayes_accuracy(train_dir, test_dir):
+    #Probability of words in corpus
     train_probs = {c: corpus_log_prob(os.path.join(train_dir, c)) for c in CLASS_VALS}
+
+    #How many of each document we have
     counts = {c: count_documents(os.path.join(train_dir, c)) for c in CLASS_VALS}
+
+    #Running the naive bayes model on the testing data
     accs = {c: accuracy(os.path.join(test_dir, c), train_probs, counts, c) for c in CLASS_VALS}
+
+    #Get results for total accuracy
+    total_correct = accs["spam"][1]+accs["ham"][1]
+    total_documents = accs["spam"][2]+accs["ham"][2]
+
+    accs["spam"] = accs["spam"][0]
+    accs["ham"] = accs["ham"][0]
+    accs["total"] = total_correct/total_documents
     return accs

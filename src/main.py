@@ -64,6 +64,8 @@ def main():
     test_dir = os.path.join(args.dir, "test")
 
     nb_acc = naive_bayes_accuracy(train_dir, test_dir)
+
+    print("Accuracy of Naive Bayes Classifier:")
     print(nb_acc)
     
 
