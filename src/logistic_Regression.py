@@ -5,6 +5,7 @@ import re
 import math
 from collections import Counter
 import numpy as np
+from heapq import nlargest
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -85,15 +86,69 @@ def corpus_counts(corpus_dir,trainValSplit):
         corpus_dict = Counter(corpus)
         corpus_arr.append(corpus_dict)
 
-    print(corpus_arr)
+    # print(corpus_arr)
 
     return corpus_arr
 
-def logReg(learnRate,iterations,q=2):
-    return ":("
+def classFunc(attrsAndWeights):
+    #1+math.exp(w0+sum(wi*xi))
+    rtrnVals = 1/(1+math.exp(sum(attrsAndWeights)))
+    return rtrnVals
 
-#1+math.exp(w0+sum(wi*xi))
+def logReg(xiwiDict,w0):    
+    xiwiSum = sum(xiwiDict.values())
 
+    return 1/(1+math.exp(-xiwiSum+w0))
+
+
+def learnWeights(xi,learnRate,iterations,startingWeight,lam,q=2,spam=1):    
+    #create initial weight dictionary
+    wiDict = dict()
+    for attr in xi:
+        wiDict[attr] = startingWeight
+
+    # print("Initial Weights: (dictionary)", end = " ")
+    # print(wiDict)
+
+    classPredict = 0
+    
+    for i in range(iterations):
+        if i%500 == 0:
+            print("Pass #" + str(i) + " | " + str(classPredict))
+        
+        scoreDict = dict()
+        for k in xi:
+            scoreDict[k] = xi[k]*wiDict[k]
+        # print(scoreDict)
+
+        classPredict = logReg(scoreDict,.1)
+        # print(classPredict)
+
+        err = spam-classPredict
+        # print(err)
+        
+        gradDict = dict()
+        for k in xi:
+            gradDict[k] = xi[k]*err
+
+        for k in wiDict:
+            wiDict[k] = wiDict[k]+(learnRate*gradDict[k])-((lam*8.5)*(wiDict[k]**2))
+
+    # print(wiDict)
+    return wiDict
+
+def classify(sample,weights):
+    xiwi = dict()
+    for k in weights:
+        try:
+            xiwi[k] = weights[k]*sample[k]
+        except:
+            xiwi[k] = 0
+  
+    return logReg(xiwi)
+
+def validate():
+    return 0
 
 def main():
     args = parse_args()
@@ -107,9 +162,16 @@ def main():
     train_counts_ham,validate_counts_ham = corpus_counts(os.path.join(train_dir, "ham"),True)
     train_counts_spam,validate_counts_spam = corpus_counts(os.path.join(train_dir, "spam"),True)
 
-    #print(spam)
-    #print(spam["a"])
-
+    # learn the weights
+    weights = learnWeights(train_counts_spam,.000001,10000,0,.1)
+    top = nlargest(20, weights, key=weights.get)
+    for t in top:
+        print(t + " | " + str(weights[t]))
+    
+    # print(classify(validate_counts_spam,weights))
+    # print(classify(validate_counts_ham,weights))
+    
+    # print(train_counts_spam)
 
 if __name__=='__main__':
 	main()
