@@ -23,5 +23,5 @@ Please note the the given directory MUST have the following structure:
     │   ├ ham
     │   └ spam
     └ train
-        └ ham
-            └ spam
+        ├ ham
+        └ spam
