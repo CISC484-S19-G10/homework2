@@ -3,7 +3,7 @@ from itertools import product
 import copy
 import pprint
 
-from main import read, split_data
+import main
 
 CLASS_VALUE = 'class_value'
 BIAS = 'bias'
@@ -38,7 +38,7 @@ def filter_data(data, min_occurences):
                 insts.pop(attrib)
 
 def extract_instances(dir_name, class_value=None, min_occurences=1):
-    raw_instances = read(dir_name, True, combine=list.append)
+    raw_instances = main.read(dir_name, True, combine=list.append)
 
     def parse_instance(raw_inst):
         inst = Counter(raw_inst)
@@ -107,7 +107,7 @@ def build_perceptron_classifier(class_dirs, class_values):
 
     #do a 70:30 split
     SPLIT_PROPS = {'train' : .7, 'valid': .3}
-    splits = split_data(data, SPLIT_PROPS)
+    splits = main.split_data(data, SPLIT_PROPS)
     training_split, validation_split = splits['train'], splits['valid']
 
     def test_accuracy(n_iters, min_occurences):
