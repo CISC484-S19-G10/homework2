@@ -208,11 +208,11 @@ def main():
 
     # check ham results
     print(" HAM %: ",end="")
-    test_logistic_regression(test_dir+"\ham",0,weights)    
+    test_logistic_regression(os.path.join(test_dir, "ham"),0,weights)    
     
     # check spam results
     print("SPAM %: ",end="")
-    test_logistic_regression(test_dir+"\spam",1,weights)
+    test_logistic_regression(os.path.join(test_dir, "spam"),1,weights)
 
 
 if __name__=='__main__':
