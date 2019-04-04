@@ -212,10 +212,10 @@ def main():
     weights = learnWeights(trainHamSpam,.0001,3,0,1)
 
     # check ham results
-    test_logistic_regression(train_dir+"\ham",0,weights)    
+    test_logistic_regression(os.path.join(train_dir, "ham"),0,weights)    
     
     # check spam results
-    test_logistic_regression(train_dir+"\spam",1,weights)    
+    test_logistic_regression(os.path.join(train_dir, "spam"),1,weights)    
 
     # check ham results
     test_logistic_regression(test_dir+"\ham",0,weights)    
