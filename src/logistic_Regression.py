@@ -24,7 +24,7 @@ def parse_args():
 
 	return parser.parse_args()
 
-def read(read_dir, alpha_only):
+def read(read_dir, alpha_only,combine=list.extend):
     to_return = []
     for filename in os.listdir(read_dir):
         f = codecs.open(os.path.join(read_dir, filename), "r", encoding="us-ascii", errors="ignore")
@@ -34,7 +34,7 @@ def read(read_dir, alpha_only):
         else:
             lines = lines.split()
 
-        to_return.extend(lines)
+        combine(to_return,lines)
         f.close()
 
     return to_return
@@ -72,6 +72,26 @@ def readWithValidateSplit(read_dir, alpha_only):
     return to_return_train,to_return_validate
 
     
+def readforTest(read_dir, alpha_only):
+    #this one returns back an array of individual emails
+    to_return = []
+   
+    filenames = os.listdir(read_dir)
+   
+    for filename in filenames:
+        f = codecs.open(os.path.join(read_dir, filename), "r", encoding="us-ascii", errors="ignore")
+        lines = f.read()
+        if alpha_only:
+            lines = re.findall(r"\w+", lines)
+        else:
+            lines = lines.split()
+
+        to_return.append(lines)
+        f.close()
+
+    return to_return
+
+
 def corpus_counts(corpus_dir,trainValSplit):
     corpus_arr = []
 
@@ -91,31 +111,30 @@ def corpus_counts(corpus_dir,trainValSplit):
     return corpus_arr
 
 
-def logReg(xiwiDict,w0):    
+def logReg(xiwiDict,w0):
+    #returns the P[Y=1|Xi]    
     xiwiSum = sum(xiwiDict.values())
 
     return 1/(1+math.exp(-xiwiSum+w0))
 
 def classify(sample,weights,w0):
+    #returns 1 if P[Y=1|Xi] > p[Y=0|Xi] else 0
     weightedSum = 0
     for k in sample:
         try:
             weightedSum += sample[k]*weights[k]
         except:
             weightedSum += .1
-            
+    result2 = math.exp(-weightedSum+w0)/(1+math.exp(-weightedSum+w0))
     result = 1/(1+math.exp(-weightedSum+w0))
-    if result > 0 :
+    # print("SPAM% " + str(result) + " | HAM% " + str(result2))
+    if result > result2 :
         return 1
     else:
         return 0
 
 
 def learnWeights(training_data,learnRate,iterations,startingWeight,lam,q=2,spam=1):    
-    #adjusting to include the ham data as well
-    print("trainingData[0]: " +str(len(training_data[0])))
-    print("trainingData[1]: " +str(len(training_data[1])))
-    
     #get all attributes from training data
     attributes = set()
     for inst in training_data:
@@ -135,6 +154,7 @@ def learnWeights(training_data,learnRate,iterations,startingWeight,lam,q=2,spam=
         
         weightedAttr = {attr: 0 for attr in attributes}
         for inst in training_data:
+            #for each iteration, train the weights on both spam and ham
             for w in weights:
                 try:
                     attrVal = inst[w]
@@ -144,7 +164,7 @@ def learnWeights(training_data,learnRate,iterations,startingWeight,lam,q=2,spam=
             
             classPredict = logReg(weightedAttr,.1)
             err = classVal - classPredict
-
+            
             #flip the value from spam->ham->spam->ham
             classVal = not classVal
 
@@ -154,13 +174,23 @@ def learnWeights(training_data,learnRate,iterations,startingWeight,lam,q=2,spam=
                 weights[k] += (learnRate*gradient[k])-((lam*0.5)*(weights[k]**2))
     return weights
 
-def get_accuracy(perceptron, testing_data):
+def get_accuracy(testing_data,classVal,weights):
     total_correct = 0
     for inst in testing_data:
-        if perceptron(inst) == inst[CLASS_VALUE]:
+        if classify(inst,weights,.1) == classVal:
             total_correct += 1
 
     return total_correct / len(testing_data)
+
+def test_logistic_regression(eval_dir,classVal,weights):
+    instances = readforTest(eval_dir,True)
+    instances_with_counts = []
+    for i in instances:
+        instances_with_counts.append(Counter(i))
+    
+    print("Instances for eval: " + str(len(instances)))
+
+    print(get_accuracy(instances_with_counts,classVal,weights))
 
 def main():
     args = parse_args()
@@ -174,18 +204,20 @@ def main():
     train_counts_ham,validate_counts_ham = corpus_counts(os.path.join(train_dir, "ham"),True)
     train_counts_spam,validate_counts_spam = corpus_counts(os.path.join(train_dir, "spam"),True)
 
+    # Combined training set (ham/spam)
     trainHamSpam = [train_counts_spam,train_counts_ham]
 
+
     # learn the weights
-    weights = learnWeights(trainHamSpam,.00001,5,0,1)
-    top = nlargest(20, weights, key=weights.get)
-    for t in top:
-        print(t + " | " + str(weights[t]))
+    weights = learnWeights(trainHamSpam,.000001,100,0,1)
+
+    # check ham results
+    test_logistic_regression(train_dir+"\ham",0,weights)    
     
-    print(classify(validate_counts_spam,weights,.1))
-    # print(classify(validate_counts_ham,weights))
-    
-    # print(train_counts_spam)
+    # check spam results
+    test_logistic_regression(train_dir+"\spam",1,weights)    
+
+
 
 if __name__=='__main__':
 	main()
