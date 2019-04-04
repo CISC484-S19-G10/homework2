@@ -209,7 +209,7 @@ def main():
 
 
     # learn the weights
-    weights = learnWeights(trainHamSpam,.000001,100,0,1)
+    weights = learnWeights(trainHamSpam,.0001,3,0,1)
 
     # check ham results
     test_logistic_regression(train_dir+"\ham",0,weights)    
@@ -217,6 +217,11 @@ def main():
     # check spam results
     test_logistic_regression(train_dir+"\spam",1,weights)    
 
+    # check ham results
+    test_logistic_regression(test_dir+"\ham",0,weights)    
+    
+    # check spam results
+    test_logistic_regression(test_dir+"\spam",1,weights)
 
 
 if __name__=='__main__':
